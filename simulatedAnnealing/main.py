@@ -1,3 +1,6 @@
+# __author:Smita Nannaware
+# data:11/12/2021
+
 from decimal import *
 import math
 import random
