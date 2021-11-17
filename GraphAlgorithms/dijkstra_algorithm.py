@@ -75,12 +75,11 @@ def dijkstra(graph: Graph, source):
     cloud.reverse()
     tree_path = ""
     tree_cost = 0
-    print("Tree path: ")
+    print("Tree paths: ")
     for vertex in cloud:
         node = graph.V[vertex]
         tree_cost += node.distance
-        if vertex not in tree_path:
-            tree_path = tree_path + "," + print_path(node)
-            print(print_path(graph.V[vertex]))
-
-    print("Tree Cost is : ", tree_cost)
+        tree_path = tree_path + "," + print_path(node)
+        print("Path of {v} = ".format(v=vertex),
+              print_path(graph.V[vertex]),
+              ", Path cost = ", graph.V[vertex].distance)

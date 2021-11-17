@@ -45,14 +45,6 @@ def relax(graph: Graph, vertex, adj, queue):
         heapq.heappush(queue, (dist, graph.V[adj].v))
 
 
-# Print the tree path from leaf node
-def print_path(v: Vertex):
-    if v.parent is None:
-        return v.v
-    else:
-        return print_path(v.parent) + '->' + v.v
-
-
 # Find the minimum spanning tree from given source vertex
 def prims(graph: Graph, source):
     init_single_source(graph=graph, source=source)
@@ -75,12 +67,11 @@ def prims(graph: Graph, source):
     cloud.reverse()
     tree_path = ""
     tree_cost = 0
-    print("Tree path: ")
+    print("Tree edges: ")
     for vertex in cloud:
         node = graph.V[vertex]
         tree_cost += node.distance
-        if vertex not in tree_path:
-            tree_path = tree_path + "," + print_path(node)
-            print(print_path(graph.V[vertex]))
+        if node.parent:
+            print(node.parent.v, node.v, node.parent.adjacent[node.v])
 
     print("Tree Cost is : ", tree_cost)

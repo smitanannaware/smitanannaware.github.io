@@ -1,4 +1,6 @@
+import os
 import random
+import sys
 
 import SCC_algorithm
 import dijkstra_algorithm
@@ -17,10 +19,20 @@ def build_graph(is_directed, edges):
     return graph
 
 
+def get_correct_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 # This method takes the appropriate input from user and runs the selected algorithm
 def main():
     edges = []
     source = ""
+
     problem_type = int(input("Please enter the problem : \n" +
                              "1. Single Source Shortest Path \n" +
                              "2. Minimum Spanning Tree \n" +
@@ -60,5 +72,6 @@ def main():
     except FileNotFoundError:
         print("Oops! That was incorrect file name. Try again!!")
 
+    k = input("Press a key to exit")
 
 main()
