@@ -33,7 +33,6 @@ def checkerboard_table(data, bkg_colors=['grey', 'white']):
 
         tb.add_cell(i, j, width, height, text=val,
                     loc='center', facecolor=color)
-
     ax.add_table(tb)
 
 
@@ -44,6 +43,8 @@ def animate(i):
         tb.get_celld()[move[0]].get_text().set_text(d)
         tb.get_celld()[move[1]].get_text().set_text(Q)
         ax.plot()
+        if i == 0:
+            time.sleep(1)
 
 
 def play_animation(current_pos, path, num):
@@ -54,5 +55,5 @@ def play_animation(current_pos, path, num):
     checkerboard_table(current_pos)
     frames = len(path)
     ani = matplotlib.animation.FuncAnimation(fig, animate,
-                                             frames=frames, interval=.05)
+                                             frames=frames, interval=100)
     plt.show()

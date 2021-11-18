@@ -16,6 +16,9 @@ from animateOutput import play_animation
 d = '-'
 Q = 'Q'
 N = 8
+success = 0
+success_time_taken = []
+failure_time_taken = []
 
 
 def get_output(array, row, column, f=None):
@@ -91,6 +94,13 @@ def get_board():
 def get_queens_on_board(board):
     # place queen randomly
     for i in range(0, N):
+        board[randint(0, N - 1)][i] = 'Q'
+    return board
+
+
+def get_queens_on_board_diagonally(board):
+    # place queen randomly
+    for i in range(0, N):
         board[i][i] = Q
     return board
 
@@ -100,77 +110,126 @@ def print_board(board=[]):
         print(' '.join(row), end='\n')
 
 
-def perform_simulated_annealing(current_pos, current_heuristic):
-    temperature = 1500000000
-    cooling_sch = 0.60
-    trials = 150000
+def perform_simulated_annealing(current_pos, current_heuristic, cooling_sch, case):
+    global success
 
-    success = False
+    temperature = 1500000000
+    is_success = False
     path_index = []
     start_time = time.time()
     if current_heuristic == 0:
         print("Solved already")
     else:
-        while temperature:
-            print("Temperature : ", temperature)
+        while temperature > 1e-200:
+            if case == 2:
+                print("Temperature : ", temperature)
             # print("current State heuristic :", current_heuristic)
-            h_table = gen_children(current_pos)
-            children, child_heuristic = get_random_successor(current_pos, h_table, path_index)
+            h_table = []
+            children, child_heuristic = get_random_successor(current_pos, path_index, case)
 
             if child_heuristic > current_heuristic:
                 diff = child_heuristic - current_heuristic
                 pdf = float(float(math.e) ** float(float(-diff) / float(temperature)))
-                print("Probability : ", pdf)
+                if case == 2:
+                    print("Probability : ", pdf)
                 if pdf > random.uniform(0, 1):
                     current_pos = children
                     current_heuristic = child_heuristic
-                else:
+                elif case == 2:
                     path_index.pop()
             else:
                 current_pos = children
                 current_heuristic = child_heuristic
                 if child_heuristic == 0:
+                    print("Solution state:")
                     print_board(current_pos)
                     print("Success")
-                    success = True
+                    is_success = True
                     break
             temperature = temperature * cooling_sch
-        if success:
+        if is_success:
             print("Found solution!!")
+            success += 1
+            success_time_taken.append(time.time() - start_time)
         else:
             print("Solution not found!!")
-        print("Time taken : ", time.time() - start_time)
-
+            failure_time_taken.append(time.time() - start_time)
+        if case == 2:
+            print("Time taken : ", time.time() - start_time)
     return path_index
 
 
-def get_random_successor(current_pos, h_table, path_index):
+def get_random_successor(current_pos, path_index, case):
     i, j = 0, 0
     for r in range(10):
         i = randint(0, N - 1)
         j = randint(0, N - 1)
-        if h_table[i][j] != float('inf'):
+        if current_pos[i][j] != Q:
             break
 
-    child_heuristic = h_table[i][j]
     x, y = get_position(current_pos, Q, j)
     children = deepcopy(current_pos)
     children[i][j], children[x][y] = children[x][y], children[i][j]
-    path_index.append([(x, y), (i, j)])
+    child_heuristic = calculate_heuristic(children)
+    if case == 2:
+        path_index.append([(x, y), (i, j)])
     return children, child_heuristic
 
 
 def main():
     global N
-    N = int(input("Please enter the number of queens : "))
-    board = get_board()
-    init_pos = get_queens_on_board(board)
-    current_pos = deepcopy(init_pos)
-    print_board(current_pos)
+    print("N Queens problem by Simulated Annealing")
+    N = int(input("Please enter the number of queens : \n"))
+    place_diagonally = input("Do you want to place queens diagonally? If No, queens will be placed randomly. "
+                             "Enter Y or N : \n")
+    case = int(input("Select from the options below : \n"
+                     "1. Run performance analysis based on cooling schedule\n"
+                     "2. Visualize the simulated annealing\n"))
 
-    current_heuristic = calculate_heuristic(current_pos)
-    path = perform_simulated_annealing(current_pos, current_heuristic)
-    play_animation(init_pos, path, N)
+    if case == 2:
+        board = get_board()
+        if place_diagonally == 'Y':
+            init_pos = get_queens_on_board_diagonally(board)
+        else:
+            init_pos = get_queens_on_board(board)
+        current_pos = deepcopy(init_pos)
+        print_board(current_pos)
+
+        current_heuristic = calculate_heuristic(current_pos)
+        path = perform_simulated_annealing(current_pos, current_heuristic, 0.60, case)
+        play_animation(init_pos, path, N)
+    elif case == 1:
+        cooling_sch = float(input("Please enter the cooling schedule value between 0 to 1 : \n"))
+        if 0 <= cooling_sch <= 1:
+            run = int(input("Enter the number of executions\n"))
+            for i in range(0, run):
+                print("Run number : ", i)
+                board = get_board()
+                if place_diagonally == 'Y':
+                    current_pos = get_queens_on_board_diagonally(board)
+                else:
+                    current_pos = get_queens_on_board(board)
+                print_board(current_pos)
+                current_heuristic = calculate_heuristic(current_pos)
+                path = perform_simulated_annealing(current_pos, current_heuristic, cooling_sch, case)
+
+            print("Total Run = {run}\n"
+                  "\nAverage time taken for success = {avg1}"
+                  "\nAverage time taken for failure = {avg2}"
+                  .format(run=run,
+                          avg1=(sum(success_time_taken) / len(success_time_taken))
+                          if len(success_time_taken) > 0 else 0,
+                          avg2=(sum(failure_time_taken) /
+                                len(failure_time_taken)) if
+                          len(failure_time_taken) > 0 else 0))
+            success_rate = (success / run) * 100
+            print("Success Rate = {sr} %".format(sr=success_rate))
+            print("Failure Rate = {fr} %".format(fr=((run - success) / run) * 100))
+            k = input("Please enter a key to exit")
+        else:
+            print("Please enter valid input!!")
+    else:
+        print("Please enter valid input!!")
 
 
 main()
