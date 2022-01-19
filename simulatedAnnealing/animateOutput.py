@@ -56,4 +56,5 @@ def play_animation(current_pos, path, num):
     frames = len(path)
     ani = matplotlib.animation.FuncAnimation(fig, animate,
                                              frames=frames, interval=100)
+    ani.save('animation.gif', writer='imagemagick', fps=100)
     plt.show()
